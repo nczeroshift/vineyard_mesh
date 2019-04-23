@@ -27,13 +27,13 @@
 #define NRF24_Channel               0x70        // Use scanner sketch to find a free channel
 #define NRF24_Bitrate               RF24_1MBPS  // Network operational bitrate
 
-#define ARDUINO_SLEEP                         // Enable to power down arduino and wake on received packet
+//#define ARDUINO_SLEEP                         // Enable to power down arduino and wake on received packet
 #define ARDUINO_SLEEP_DELAY         10000       // Milliseconds before arduino enter "sleep"
 #define ARDUINO_SLEEP_CHECK_WAN     4           // After X number of sleeps, it checks connectivity.
 #define ARDUINO_SLEEP_TIME          SLEEP_8S    // Lowpower library setting.
 
 // TODO
-#define NRF24_RADIO_MUTE                        // Enable to power down nrf24 radio     
+//#define NRF24_RADIO_MUTE                        // Enable to power down nrf24 radio     
  
 #define NRF24_CE_Pin                9           // arduino pro mini (9,10) 
 #define NRF24_CS_Pin                10          // arduino pro mini (9,10) 
@@ -113,6 +113,9 @@ void setup()
     radio.maskIRQ(1,1,0); // Enable RX interrupt
 
     pinMode(NRF24_WakeUp_Pin, INPUT); 
+
+    pinMode(4,OUTPUT);  // IO Example Led
+    pinMode(3,INPUT);   // IO Example Button
 }
 
 void loop() 
@@ -163,7 +166,8 @@ bool nrf24_handle_packet(RF24NetworkHeader * header)
         // IO packet, to enable/disable something.
         struct packet_io_t pk;
         network.read(header, &pk, sizeof(packet_io_t)); 
-
+        if(pk.channel == 0)
+            digitalWrite(5, pk.value == 1 ? HIGH :LOW);
         return true;
     }
 
@@ -208,6 +212,7 @@ void sleep_managment()
                 Serial.println(F("Renewing Address"));
                 mesh.renewAddress();
             }
+            lastMillis = -1;
             sleepCount = 0;
         }
     }
@@ -221,6 +226,12 @@ void sleep_managment()
  
 bool nrf24_send_packet(char type, void * pk, uint8_t pk_size)
 {
+    // TODO: This magic sleep fixes a lot of issues
+    // with radio transmission. For some reason, until
+    // anyone can figure it out, DON'T DELETE IT before 
+    // transmitting packets.
+    delay(1); 
+         
     if(!mesh.write(pk, type, pk_size)) {
         if(!mesh.checkConnection()){
             Serial.println(F("Renewing Address"));

@@ -112,11 +112,11 @@ return 0;
                 String [] tokens = data.split("\n");
 
                 if(tokens.length > 3) {
-                    int nodeId = Integer.parseInt(tokens[0]);
+                    int nodeId = Integer.parseInt(tokens[2]);
                     byte pkType =(Byte.valueOf(tokens[1]));
 
                     if(node.getAddress().equals(nodeId) && packet.getType().code == pkType) {
-                        int len = Integer.valueOf(tokens[2]);
+                        int len = Integer.valueOf(tokens[0]);
                         VYPayload payload = null;
 
                         try {

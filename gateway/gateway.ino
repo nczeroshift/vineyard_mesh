@@ -373,7 +373,7 @@ bool ethernet_handle_post_send(char * data, word len){
       packet_data[j_len++] = strtol(tmp, NULL, 16); 
     }
 
-    delay(1); // magic sleep, just works!
+    delay(10); // magic sleep, just works!
     
     if(nrf24_send_packet(id, packet_type[0], packet_data, j_len)){
       Serial.println(F("success!"));
@@ -448,9 +448,10 @@ void nrf24_update(){
     RF24NetworkHeader header;
     network.peek(header);
 
-    Serial.print("New packet: ");
+    Serial.print(F("New packet: "));
     Serial.println((char)header.type);
-    
+    Serial.print(F("From: ")); 
+    Serial.println(header.from_node);
     switch(header.type)
     {
       case 'V': // Voltage
